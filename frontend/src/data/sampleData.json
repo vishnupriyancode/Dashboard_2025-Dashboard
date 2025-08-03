@@ -1,0 +1,32 @@
+{
+  "1234567890123": {
+    "id": "1234567890123",
+    "status": "active",
+    "type": "standard",
+    "created_at": "2024-03-20T10:00:00Z",
+    "metadata": {
+      "version": "1.0",
+      "category": "test"
+    }
+  },
+  "9876543210987": {
+    "id": "9876543210987",
+    "status": "pending",
+    "type": "premium",
+    "created_at": "2024-03-20T11:00:00Z",
+    "metadata": {
+      "version": "2.0",
+      "category": "production"
+    }
+  },
+  "4567890123456": {
+    "id": "4567890123456",
+    "status": "inactive",
+    "type": "basic",
+    "created_at": "2024-03-20T12:00:00Z",
+    "metadata": {
+      "version": "1.5",
+      "category": "development"
+    }
+  }
+} 
