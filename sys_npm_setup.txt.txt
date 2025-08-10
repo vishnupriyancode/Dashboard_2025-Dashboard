@@ -1,0 +1,6 @@
+activate windows subsystem for linux
+docker latest version
+link:
+https://github.com/coreybutler/nvm-windows/releases
+nvm use 22.17.1
+npm i
