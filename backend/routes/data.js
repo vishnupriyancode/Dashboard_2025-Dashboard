@@ -20,7 +20,7 @@ router.post('/save-api-log', async (req, res) => {
     const query = `
       INSERT INTO api_logs 
       (domain_id, model, method, status, endpoint, time, value, request_id) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
     `;
     
     await db.query(query, [domain_id, model, method, status, endpoint, time, value, request_id]);
@@ -62,7 +62,7 @@ router.get('/daily-report', async (req, res) => {
     `;
     
     if (startDate && endDate) {
-      query += ` WHERE timestamp BETWEEN ? AND ?`;
+      query += ` WHERE timestamp BETWEEN $1 AND $2`;
     }
     
     query += ` ORDER BY timestamp DESC`;

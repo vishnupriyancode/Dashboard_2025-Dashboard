@@ -1,20 +1,21 @@
 {
   "name": "dashboard-backend",
   "version": "1.0.0",
-  "description": "Backend for the Dashboard application",
+  "description": "Dashboard Backend API",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "sqlite3": "^5.1.7"
+    "cors": "^2.8.5",
+    "sqlite3": "^5.1.6",
+    "pg": "^8.11.3",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.0.1"
   }
 } 

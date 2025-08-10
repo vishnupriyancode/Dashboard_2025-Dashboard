@@ -92,7 +92,7 @@ const Login = () => {
                   autoComplete="username"
                   required
                   className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-white/10 placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent sm:text-sm bg-white/5 backdrop-blur-sm transition-all duration-200"
-                  placeholder="admin@example.com"
+                  placeholder="admin"
                   value={formData.username}
                   onChange={handleChange}
                 />

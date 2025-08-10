@@ -2,7 +2,7 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api
 
 export const fetchDataA = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/fetch-data-a`, {
+    const response = await fetch(`${API_BASE_URL}/data/fetch-data-a`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

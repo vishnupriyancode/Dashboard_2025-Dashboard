@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
+const bcrypt = require('bcryptjs');
 
 // Login endpoint
 router.post('/login', async (req, res) => {
@@ -12,7 +13,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Get user from database
-    const users = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+    const users = await db.query('SELECT * FROM users WHERE username = $1', [username]);
     
     if (users.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -20,8 +21,9 @@ router.post('/login', async (req, res) => {
 
     const user = users[0];
     
-    // For now, simple password comparison (in production, use bcrypt)
-    if (password === user.password) {
+    // Compare password using bcrypt
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (isValidPassword) {
       res.json({ 
         success: true, 
         message: 'Login successful',
@@ -50,14 +52,15 @@ router.post('/register', async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUsers = await db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email]);
+    const existingUsers = await db.query('SELECT * FROM users WHERE username = $1 OR email = $2', [username, email]);
     
     if (existingUsers.length > 0) {
       return res.status(400).json({ error: 'Username or email already exists' });
     }
 
-    // Insert new user
-    await db.query('INSERT INTO users (username, password, email) VALUES (?, ?, ?)', [username, password, email]);
+    // Hash the password and insert new user
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.query('INSERT INTO users (username, password, email) VALUES ($1, $2, $3)', [username, hashedPassword, email]);
     
     res.json({ 
       success: true, 
@@ -79,7 +82,7 @@ router.post('/change-password', async (req, res) => {
     }
 
     // Get user from database
-    const users = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+    const users = await db.query('SELECT * FROM users WHERE username = $1', [username]);
     
     if (users.length === 0) {
       return res.status(401).json({ error: 'User not found' });
@@ -87,13 +90,15 @@ router.post('/change-password', async (req, res) => {
 
     const user = users[0];
     
-    // Verify current password
-    if (currentPassword !== user.password) {
+    // Verify current password using bcrypt
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
       return res.status(401).json({ error: 'Current password is incorrect' });
     }
 
-    // Update password
-    await db.query('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [newPassword, user.id]);
+    // Hash the new password and update
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    await db.query('UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [hashedNewPassword, user.id]);
     
     res.json({ 
       success: true, 
@@ -110,7 +115,7 @@ router.get('/profile/:username', async (req, res) => {
   try {
     const { username } = req.params;
     
-    const users = await db.query('SELECT id, username, email, created_at FROM users WHERE username = ?', [username]);
+    const users = await db.query('SELECT id, username, email, created_at FROM users WHERE username = $1', [username]);
     
     if (users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -119,6 +124,38 @@ router.get('/profile/:username', async (req, res) => {
     res.json({ user: users[0] });
   } catch (error) {
     console.error('Get profile error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update existing users endpoint (for migration)
+router.post('/update-users', async (req, res) => {
+  try {
+    // Find users where username contains @ (email format)
+    const users = await db.query('SELECT * FROM users WHERE username LIKE \'%@%\'');
+    
+    for (const user of users) {
+      // Extract username from email (everything before @)
+      const newUsername = user.username.split('@')[0];
+      
+      // Check if the new username already exists
+      const existingUser = await db.query('SELECT * FROM users WHERE username = $1', [newUsername]);
+      
+      if (existingUser.length === 0) {
+        // Update the username
+        await db.query('UPDATE users SET username = $1 WHERE id = $2', [newUsername, user.id]);
+        console.log(`Updated user ${user.username} to ${newUsername}`);
+      } else {
+        console.log(`Username ${newUsername} already exists, skipping ${user.username}`);
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Users updated successfully' 
+    });
+  } catch (error) {
+    console.error('Update users error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

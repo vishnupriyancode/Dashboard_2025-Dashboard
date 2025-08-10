@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dashboard-postgres
+    environment:
+      POSTGRES_DB: dashboard_db
+      POSTGRES_USER: dashboard_user
+      POSTGRES_PASSWORD: dashboard_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../backend/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - dashboard-network
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3000:5001"
+    environment:
+      - NODE_ENV=production
+      - PORT=5001
+      - DATABASE_URL=postgresql://dashboard_user:dashboard_pass@postgres:5432/dashboard_db
+      - REACT_APP_API_URL=http://localhost:3000/api
+    container_name: dashboard-app
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    volumes:
+      - ../backend/data:/app/backend/data
+      - ../logs:/app/logs
+    networks:
+      - dashboard-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  dashboard-network:
+    driver: bridge 

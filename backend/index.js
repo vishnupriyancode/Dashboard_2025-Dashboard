@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the frontend build directory
-app.use(express.static(path.join(__dirname, '../frontend/build')));
+// app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 // API Routes
 app.use('/api/data', dataRoutes);
@@ -24,6 +24,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -31,9 +35,9 @@ app.use((err, req, res, next) => {
 });
 
 // Serve React app for all other routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
-});
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+// });
 
 // Start server
 app.listen(port, '0.0.0.0', () => {
