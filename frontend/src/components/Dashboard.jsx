@@ -117,22 +117,48 @@ const Dashboard = () => {
         const fromDate = dateRange.from.toISOString().split('T')[0];
         const toDate = dateRange.to.toISOString().split('T')[0];
         
-        // For demo purposes, generate sample data instead of API call
+        // Fetch real data from API
+        const response = await fetch(`http://localhost:5001/api/data/fetch-data-a?from=${fromDate}&to=${toDate}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const apiResponse = await response.json();
+        
+        if (apiResponse.data && Array.isArray(apiResponse.data)) {
+          // Transform API data to match expected format
+          const transformedData = {
+            summary: {
+              total: apiResponse.data.length,
+              success: apiResponse.data.filter(item => item.status === 'success' || item.status === 'sucess').length,
+              failed: apiResponse.data.filter(item => item.status === 'error' || item.status === 'failed').length,
+              pending: apiResponse.data.filter(item => item.status === 'pending').length,
+              changes: {
+                total: '+12%',
+                success: '+8%',
+                failed: '-3%',
+                pending: '+5%'
+              }
+            },
+            statusData: generateChartData(timeRange)
+          };
+          
+          setApiData(transformedData);
+        } else {
+          // Fallback to sample data if API response is invalid
+          const sampleData = {
+            ...apiData,
+            statusData: generateChartData(timeRange)
+          };
+          setApiData(sampleData);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Fallback to sample data on error
         const sampleData = {
           ...apiData,
           statusData: generateChartData(timeRange)
         };
-        
         setApiData(sampleData);
-        
-        // Uncomment below for actual API integration
-        /*
-        const response = await fetch(`YOUR_API_ENDPOINT?from=${fromDate}&to=${toDate}`);
-        const data = await response.json();
-        setApiData(data);
-        */
-      } catch (error) {
-        console.error('Error fetching data:', error);
       }
     };
 
@@ -287,7 +313,44 @@ const Dashboard = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <button
+          onClick={() => {
+            const fromDate = dateRange.from.toISOString().split('T')[0];
+            const toDate = dateRange.to.toISOString().split('T')[0];
+            fetch(`http://localhost:5001/api/data/fetch-data-a?from=${fromDate}&to=${toDate}`)
+              .then(response => response.json())
+              .then(data => {
+                if (data.data && Array.isArray(data.data)) {
+                  const transformedData = {
+                    summary: {
+                      total: data.data.length,
+                      success: data.data.filter(item => item.status === 'success' || item.status === 'sucess').length,
+                      failed: data.data.filter(item => item.status === 'error' || item.status === 'failed').length,
+                      pending: data.data.filter(item => item.status === 'pending').length,
+                      changes: {
+                        total: '+12%',
+                        success: '+8%',
+                        failed: '-3%',
+                        pending: '+5%'
+                      }
+                    },
+                    statusData: generateChartData(timeRange)
+                  };
+                  setApiData(transformedData);
+                }
+              })
+              .catch(error => console.error('Refresh error:', error));
+          }}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Refresh Data
+        </button>
+      </div>
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <MetricCard

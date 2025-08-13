@@ -502,30 +502,45 @@ const DailyReport = () => {
 
   const postgresColumns = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
-    },
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Value',
-      dataIndex: 'value',
-      key: 'value',
-    },
-    {
-      title: 'Timestamp',
+      title: (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          Date
+          <span style={{ fontSize: '12px', color: '#999' }}>↕</span>
+        </div>
+      ),
       dataIndex: 'timestamp',
       key: 'timestamp',
       sorter: (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
     },
     {
-      title: 'Status',
+      title: (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          Category
+          <span style={{ fontSize: '12px', color: '#999' }}>▼</span>
+        </div>
+      ),
+      dataIndex: 'name',
+      key: 'name',
+      filters: [
+        { text: 'Active', value: 'active' },
+        { text: 'Inactive', value: 'inactive' },
+      ],
+      onFilter: (value, record) => record.status === value,
+    },
+    {
+      title: (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          Status
+          <span style={{ fontSize: '12px', color: '#999' }}>▼</span>
+        </div>
+      ),
       dataIndex: 'status',
       key: 'status',
+      filters: [
+        { text: 'Active', value: 'active' },
+        { text: 'Inactive', value: 'inactive' },
+      ],
+      onFilter: (value, record) => record.status === value,
       render: (status) => (
         <span style={{ 
           color: status === 'active' ? '#52c41a' : 
@@ -534,6 +549,17 @@ const DailyReport = () => {
           {status}
         </span>
       ),
+    },
+    {
+      title: (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          Response Time (ms)
+          <span style={{ fontSize: '12px', color: '#999' }}>↕</span>
+        </div>
+      ),
+      dataIndex: 'value',
+      key: 'value',
+      sorter: (a, b) => parseFloat(a.value) - parseFloat(b.value),
     },
   ];
 
@@ -731,6 +757,75 @@ const DailyReport = () => {
         }}>
           Fetch Records
         </h2>
+        
+        {/* Summary Metrics Section */}
+        <Row gutter={16} className="mb-6" style={{ marginBottom: '24px' }}>
+          <Col span={6}>
+            <Card className="metrics-card" style={{ 
+              background: 'linear-gradient(to right, #d0d0d0, #ffffff)',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: 'none'
+            }}>
+              <Statistic
+                title={<span style={{ color: '#666666', fontSize: '14px', fontWeight: 'normal' }}>Total Requests</span>}
+                value={postgresData.length}
+                precision={0}
+                valueStyle={{ color: '#000000', fontSize: '24px', fontWeight: 'bold' }}
+              />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card className="metrics-card" style={{ 
+              background: 'linear-gradient(to right, #d0d0d0, #ffffff)',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: 'none'
+            }}>
+              <Statistic
+                title={<span style={{ color: '#666666', fontSize: '14px', fontWeight: 'normal' }}>Success Rate</span>}
+                value={postgresData.length > 0 ? 
+                  (postgresData.filter(item => item.status === 'active').length / postgresData.length * 100) : 0}
+                precision={2}
+                suffix="%"
+                valueStyle={{ color: '#000000', fontSize: '24px', fontWeight: 'bold' }}
+              />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card className="metrics-card" style={{ 
+              background: 'linear-gradient(to right, #d0d0d0, #ffffff)',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: 'none'
+            }}>
+              <Statistic
+                title={<span style={{ color: '#666666', fontSize: '14px', fontWeight: 'normal' }}>Avg Response Time</span>}
+                value={postgresData.length > 0 ? 
+                  (postgresData.reduce((acc, item) => acc + (parseFloat(item.value) || 0), 0) / postgresData.length) : 0}
+                precision={2}
+                suffix="ms"
+                valueStyle={{ color: '#000000', fontSize: '24px', fontWeight: 'bold' }}
+              />
+            </Card>
+          </Col>
+          <Col span={6}>
+            <Card className="metrics-card" style={{ 
+              background: 'linear-gradient(to right, #d0d0d0, #ffffff)',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              border: 'none'
+            }}>
+              <Statistic
+                title={<span style={{ color: '#666666', fontSize: '14px', fontWeight: 'normal' }}>Failed Requests</span>}
+                value={postgresData.filter(item => item.status === 'inactive').length}
+                precision={0}
+                valueStyle={{ color: '#000000', fontSize: '24px', fontWeight: 'bold' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+        
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -771,12 +866,21 @@ const DailyReport = () => {
           </div>
         ) : (
           postgresData.length > 0 && (
-            <Table
-              columns={postgresColumns}
-              dataSource={postgresData}
-              rowKey="id"
-              pagination={false}
-            />
+            <div style={{ 
+              background: '#ffffff', 
+              borderRadius: '8px',
+              padding: '16px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+            }}>
+              <Table
+                columns={postgresColumns}
+                dataSource={postgresData}
+                rowKey="id"
+                pagination={false}
+                style={{ background: '#ffffff' }}
+                className="fetch-records-table"
+              />
+            </div>
           )
         )}
       </Card>

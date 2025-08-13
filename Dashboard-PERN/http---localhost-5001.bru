@@ -6,8 +6,20 @@ meta {
 
 get {
   url: http://localhost:5001/api/data/fetch-data-a
-  body: none
+  body: json
   auth: inherit
+}
+
+body:json {
+  {
+    "version": "1",
+    "name": "Dashboard-PERN",
+    "type": "collection",
+    "ignore": [
+      "node_modules",
+      ".git"
+    ]
+  }
 }
 
 settings {
