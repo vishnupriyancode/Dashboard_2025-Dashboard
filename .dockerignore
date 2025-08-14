@@ -1,12 +1,21 @@
-# Dependencies
-node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Git
+.git
+.gitignore
 
-# Production builds
-frontend/build
-backend/dist
+# Node modules (will be installed in container)
+node_modules/
+*/node_modules/
+
+# Build outputs
+build/
+dist/
+*/build/
+*/dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
 
 # Environment files
 .env
@@ -16,8 +25,8 @@ backend/dist
 .env.production.local
 
 # IDE files
-.vscode
-.idea
+.vscode/
+.idea/
 *.swp
 *.swo
 
@@ -25,77 +34,29 @@ backend/dist
 .DS_Store
 Thumbs.db
 
-# Git
-.git
-.gitignore
+# Docker files
+docker-compose*.yml
+Dockerfile*
 
-# Docker
-Dockerfile
-docker-compose.yml
-.dockerignore
+# Documentation
+docs/
+*.md
+!README.md
 
-# Logs
-logs
-*.log
+# Scripts (except essential ones)
+scripts/
+*.bat
+*.ps1
+*.sh
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
+# Test files
+tests/
+test-*.js
 
-# Coverage directory used by tools like istanbul
-coverage
+# Excel files (can be large)
+*.xlsx
+*.xls
 
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# next.js build output
-.next
-
-# nuxt.js build output
-.nuxt
-
-# vuepress build output
-.vuepress/dist
-
-# Serverless directories
-.serverless
-
-# FuseBox cache
-.fusebox/
-
-# DynamoDB Local files
-.dynamodb/
-
-# TernJS port file
-.tern-port
-
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
-
-# Temporary folders
+# Temporary files
 tmp/
 temp/ 

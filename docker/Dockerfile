@@ -13,11 +13,14 @@ COPY backend/package*.json ./backend/
 
 # Install frontend dependencies
 WORKDIR /app/frontend
-RUN npm install
+RUN npm ci --only=production
 
 # Install backend dependencies
 WORKDIR /app/backend
-RUN npm install
+RUN npm ci --only=production
+
+# Install serve globally for frontend
+RUN npm install -g serve
 
 # Copy source code
 WORKDIR /app
@@ -38,15 +41,11 @@ RUN mkdir -p backend/data logs && \
     chmod -R 755 backend/data logs
 
 # Copy startup script
-COPY scripts/start.sh /app/start.sh
+COPY docker/start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-# Expose port
-EXPOSE 5001
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+# Expose ports for both frontend and backend
+EXPOSE 3000 5001
 
 # Start the application
 CMD ["/app/start.sh"] 

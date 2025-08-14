@@ -5,6 +5,26 @@ echo "Starting dashboard application..."
 # Create necessary directories if they don't exist
 mkdir -p /app/backend/data /app/logs
 
+# Initialize database if it doesn't exist
+if [ ! -f /app/backend/data/dashboard.sqlite ]; then
+    echo "Initializing database..."
+    cd /app/backend
+    node -e "
+    const sqlite3 = require('sqlite3').verbose();
+    const db = new sqlite3.Database('./data/dashboard.sqlite');
+    const fs = require('fs');
+    const initSQL = fs.readFileSync('./config/init.sql', 'utf8');
+    db.exec(initSQL, (err) => {
+        if (err) {
+            console.error('Database initialization error:', err);
+            process.exit(1);
+        }
+        console.log('Database initialized successfully');
+        db.close();
+    });
+    "
+fi
+
 # Function to handle shutdown
 cleanup() {
     echo "Shutting down dashboard application..."
@@ -54,4 +74,4 @@ echo "Frontend: http://localhost:3000"
 echo "Backend API: http://localhost:5001"
 
 # Wait for either process to exit
-wait $BACKEND_PID $FRONTEND_PID 
+wait $BACKEND_PID $FRONTEND_PID

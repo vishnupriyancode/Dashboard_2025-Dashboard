@@ -1,6 +1,8 @@
+version: '3.8'
+
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: dashboard-postgres
     environment:
       POSTGRES_DB: dashboard_db
@@ -9,35 +11,47 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ../backend/config/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
     restart: unless-stopped
     networks:
       - dashboard-network
 
-  dashboard:
+  dashboard-app:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+    image: dashboard-2025:latest
+    container_name: dashboard-app
     ports:
-      - "3000:5001"
+      - "3000:3000"
+      - "5001:5001"
     environment:
       - NODE_ENV=production
       - PORT=5001
+      - REACT_APP_API_URL=http://localhost:5001/api
+      - JWT_SECRET=your-super-secret-jwt-key-change-in-production
       - DATABASE_URL=postgresql://dashboard_user:dashboard_pass@postgres:5432/dashboard_db
-      - REACT_APP_API_URL=http://localhost:3000/api
-    container_name: dashboard-app
     restart: unless-stopped
-    depends_on:
-      - postgres
     volumes:
-      - ../backend/data:/app/backend/data
-      - ../logs:/app/logs
+      - dashboard-data:/app/backend/data
+      - dashboard-logs:/app/logs
     networks:
       - dashboard-network
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5001/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
-  postgres_data:
+  postgres-data:
+    driver: local
+  dashboard-data:
+    driver: local
+  dashboard-logs:
     driver: local
 
 networks:

@@ -5,11 +5,25 @@ const bcrypt = require('bcryptjs');
 const connectionString = process.env.DATABASE_URL || 
 'postgresql://dashboard_user:dashboard_pass@localhost:5432/dashboard_db';
 
+console.log('Database connection string:', connectionString.replace(/\/\/[^:]+:[^@]+@/, '//***:***@'));
+
 const pool = new Pool({
   connectionString: connectionString,
+  // Add connection pool settings
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
-console.log('Connecting to PostgreSQL database...');
+// Test the connection
+pool.on('connect', () => {
+  console.log('Connected to PostgreSQL database');
+});
+
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
 
 // Initialize database tables
 const initializeDatabase = async () => {
